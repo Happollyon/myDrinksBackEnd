@@ -1,18 +1,17 @@
-from flask import Flask 
-from flask_sqlalchemy import SQLAlchemy
+import imp
+from flask import Flask, jsonify
+from sqlalchemy import create_engine, false
+from sqlalchemy.orm import scoped_session,sessionmaker
 import os
 
 
 app = Flask(__name__)
-uri= os.getenv("uri", "optional-default")
-app.config['SQLALCHEMY_DATABASE_URI'] =uri 
-db = SQLAlchemy(app)
+app.config.update(dict(
+    DEBUG = True
+))
+engine = create_engine('postgresql://dmcjgfxxlzkwzz:54d357220eb56acc5bc27a98ace88fdc63a94a6837378d415896997085118fcf@ec2-52-19-188-149.eu-west-1.compute.amazonaws.com:5432/d48equ8fqv99ao')
 
-
-class User(db.Model):
-	id = db.Column(db.Integer, primary_key = True)
-	username = db.Column(db.String(16),unique = True)
-	password = db.Column(db.String(16))
+db = scoped_session(sessionmaker(bind=engine))
 
 
 @app.route('/')
@@ -20,13 +19,19 @@ def index():
 	
 	return 'Hello, Flask!'
 
-@app.route('/register')
-def register():
-	db.engine.execute("insert into Users(unsername,password) values('fagner','fagner123');")
-	
-	for record in db.engine.execute('SELECT * FROM Users;'):
-		print(record)
 
+@app.route('/register/<string:username>/<string:password>',methods=['GET'])
+def register(username,password):
+	usernameCheck = db.execute("SELECT * FROM users WHERE username = :username",{'username':username}).fetchone()
+	db.commit()
+	if usernameCheck:
+		return{'available':'false'}
+	else:
+		db.execute("INSERT INTO users(username,password) VALUES(:username,:password)",{'username':username,'password':password})
+		val= db.execute("SELECT * FROM users").fetchall()
+		db.commit()
+	
+		return jsonify({'data':[dict(row) for row in val]})
 
 if __name__ == '__main__':
 	app.run(debug=True)
