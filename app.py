@@ -1,9 +1,10 @@
 from flask import Flask 
 from flask_sqlalchemy import SQLAlchemy
+from config import uri
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] ='postgresql://mesclvyfkornqx:0f7774e9362ac46a6aaf73a126b74a05903e0314d13ec45a66318e5528a252ab@ec2-34-247-72-29.eu-west-1.compute.amazonaws.com:5432/d2q7psbls4sks2'
+app.config['SQLALCHEMY_DATABASE_URI'] =uri 
 db = SQLAlchemy(app)
 
 
@@ -17,6 +18,14 @@ class User(db.Model):
 def index():
 	
 	return 'Hello, Flask!'
+
+@app.route('/register')
+def register():
+	db.engine.execute("insert into Users(unsername,password) values('fagner','fagner123');")
+	
+	for record in db.engine.execute('SELECT * FROM Users;'):
+		print(record)
+
 
 if __name__ == '__main__':
 	app.run(debug=True)
