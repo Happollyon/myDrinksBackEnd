@@ -1,9 +1,9 @@
 from flask import Flask 
 from flask_sqlalchemy import SQLAlchemy
-from config import uri
+
 
 app = Flask(__name__)
-
+uri= os.getenv("uri", "optional-default")
 app.config['SQLALCHEMY_DATABASE_URI'] =uri 
 db = SQLAlchemy(app)
 
