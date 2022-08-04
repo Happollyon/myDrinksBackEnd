@@ -17,6 +17,14 @@ def index():
 	
 	return 'Hello, Flask!'
 
+@app.route('/checkusername/<string:username>',methods=['GET'])
+def checkusername(username):
+    usernameCheck = db.execute("SELECT * FROM users WHERE username = :username",{'username':username}).fetchone()
+    db.commit()
+    if usernameCheck:
+        return{'available':'false'}
+    else:
+        return{'available':'true'}
 
 @app.route('/register/<string:username>/<string:password>',methods=['GET'])
 def register(username,password):
