@@ -49,6 +49,20 @@ def register(username,password):
         return jsonify({'data':[dict(row) for row in val]})
 
 
+
+#This endpoint checks if the user is already registered. 
+@app.route('/loggin/<string:username>/<string:password>',methods=['get'])
+def loggin(username,password):
+    user = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",{'username':username,'password':password}).fetchone()
+    db.commit()
+    
+    if user:
+        return jsonify({'logged':'true','username':user['username']})
+    else:
+        return jsonify({'logged':'false'})
+        
+
+
 #this endpoint clears all rows from table
 @app.route('/clearuserstable')
 def clearuserstable():
