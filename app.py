@@ -89,12 +89,25 @@ def likedrink(user_id,drink_id):
        db.execute('INSERT INTO user_favs(user_id,drink_id) VALUES(:user_id,:drink_id)',{'user_id':user_id,'drink_id':drink_id})
        db.commit()
        return jsonify({'successful':'true'})
+
+# this endpoint returns all drinks liked by the user
 @app.route('/selectliked/<int:user_id>')
 def selectLiked(user_id):
     liked_drinks = db.execute("SELECT * FROM user_favs WHERE user_id = :user_id",{'user_id':user_id}).fetchall()
     db.commit()
     return jsonify({'successful':'true','liked_drinks':[dict(row) for row in liked_drinks]})
 
+# this endpint return if user already likes the drink or not
+@app.route('/liked/<int:user_id>/<int:drink_id>')
+def liked(user_id,drink_id):
+    #check if user already likes the drink
+    alreadyLiked = db.execute("SELECT * FROM user_favs WHERE user_id = :user_id AND drink_id = :drink_id",{'user_id':user_id,'drink_id':drink_id}).fetchall()
+    db.commit()
+    
+    if alreadyLiked:
+        return jsonify({'alreadyLiked':'true'})
+    else:
+        return jsonify({'alreadyLiked':'false'})
 
 if __name__ == '__main__':
 	app.run(debug=True)
