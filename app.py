@@ -109,5 +109,13 @@ def liked(user_id,drink_id):
     else:
         return jsonify({'alreadyLiked':'false'})
 
+# this endpoint removes liked drinks from user_favs table
+@app.route('/dislike/<int:user_id>/<int:drink_id>')
+def dislike(user_id,drink_id):
+    db.execute("DELETE  FROM user_favs WHERE user_id = :user_id AND drink_id = :drink_id",{'user_id':user_id,'drink_id':drink_id})
+    db.commit()
+
+    return jsonify({'success':'true'})
+
 if __name__ == '__main__':
 	app.run(debug=True)
