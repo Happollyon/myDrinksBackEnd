@@ -22,6 +22,11 @@ db = scoped_session(sessionmaker(bind=engine))
 def index():	
 	return 'Hello, Flask!'
 
+#This function is used to create the tables 
+def createTable(query):
+    db.execute()
+    db.commit()
+    print('SUCCESS!')
 
 # this end point checks if the username is available
 @app.route('/checkusername/<string:username>',methods=['GET'])
@@ -53,11 +58,11 @@ def register(username,password):
 #This endpoint checks if the user is already registered. 
 @app.route('/loggin/<string:username>/<string:password>',methods=['get'])
 def loggin(username,password):
-    user = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",{'username':username,'password':password}).fetchone()
+    user = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",{'username':username,'password':password}).fetchall()
     db.commit()
     
     if user:
-        return jsonify({'logged':'true','username':user['username']})
+        return jsonify({'logged':'true','userData':[dict(row) for row in user]})
     else:
         return jsonify({'logged':'false'})
         
@@ -71,6 +76,24 @@ def clearuserstable():
     db.commit()
 
     return jsonify({'data':[dict(row) for row in val]})#returns empty object.  
+
+@app.route('/likedrink/<int:user_id>/<int:drink_id>')
+def likedrink(user_id,drink_id):
+   #check if user alread likes the drink
+   alreadyLiked = db.execute("SELECT * FROM user_favs WHERE user_id = :user_id AND drink_id = :drink_id",{'user_id':user_id,'drink_id':drink_id}).fetchall()
+   db.commit()
+   # if user already likes the drink end.
+   if alreadyLiked:
+       return jsonify({'alreadyLiked':'true'})
+   else:
+       db.execute('INSERT INTO user_favs(user_id,drink_id) VALUES(:user_id,:drink_id)',{'user_id':user_id,'drink_id':drink_id})
+       db.commit()
+       return jsonify({'successful':'true'})
+@app.route('/selectliked/<int:user_id>')
+def selectLiked(user_id):
+    liked_drinks = db.execute("SELECT * FROM user_favs WHERE user_id = :user_id",{'user_id':user_id}).fetchall()
+    db.commit()
+    return jsonify({'successful':'true','liked_drinks':[dict(row) for row in liked_drinks]})
 
 
 if __name__ == '__main__':
