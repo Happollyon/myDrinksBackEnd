@@ -48,17 +48,16 @@ def register(username,password):
         return{'available':'false'}
     else:
         #If username is available user is inserted to database
-        db.execute("INSERT INTO users(username,password) VALUES(:username,:password)",{'username':username,'password':password})
-        val= db.execute("SELECT * FROM users").fetchall()
+        user = db.execute("INSERT INTO users(username,password) VALUES(:username,:password) returning id, username",{'username':username,'password':password}).fetchall()
         db.commit()
-        return jsonify({'data':[dict(row) for row in val]})
+        return jsonify({'userData':[dict(row) for row in user]})
 
 
 
 #This endpoint checks if the user is already registered. 
 @app.route('/loggin/<string:username>/<string:password>',methods=['get'])
 def loggin(username,password):
-    user = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",{'username':username,'password':password}).fetchall()
+    user = db.execute("SELECT username,id FROM users WHERE username = :username AND password = :password",{'username':username,'password':password}).fetchall()
     db.commit()
     
     if user:
